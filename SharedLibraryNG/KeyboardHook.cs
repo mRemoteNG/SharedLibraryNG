@@ -38,6 +38,7 @@ namespace SharedLibraryNG
         }
 
         protected class KeyNotificationEntry
+			: IEquatable<KeyNotificationEntry>
         {
             public IntPtr WindowHandle;
             public Int32 KeyCode;
@@ -249,5 +250,23 @@ namespace SharedLibraryNG
 
             NotificationEntries.Add(newNotificationEntry);
         }
+
+		public static void CancelKeyNotification(IntPtr windowHandle, Int32 keyCode, Boolean block)
+		{
+			CancelKeyNotification(windowHandle, keyCode, ModifierKeys.None, block);
+		}
+
+		public static void CancelKeyNotification(IntPtr windowHandle, Int32 keyCode, ModifierKeys modifierKeys = ModifierKeys.None, Boolean block = false)
+		{
+			var notificationEntry = new KeyNotificationEntry
+			{
+				WindowHandle = windowHandle,
+				KeyCode = keyCode,
+				ModifierKeys = modifierKeys,
+				Block = block,
+			};
+
+			NotificationEntries.Remove(notificationEntry);
+		}
     }
 }
