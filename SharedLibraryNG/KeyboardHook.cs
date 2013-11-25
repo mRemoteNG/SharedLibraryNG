@@ -55,14 +55,18 @@ namespace SharedLibraryNG
         }
 
         public const string HookKeyMsgName = "HOOKKEYMSG-{56BE0940-34DA-11E1-B308-C6714824019B}";
+	    private static Int32 _hookKeyMsg;
         public static Int32 HookKeyMsg
         {
             get
             {
-                var m = Win32.RegisterWindowMessage(HookKeyMsgName).ToInt32();
-                if (m == 0)
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                return m;
+	            if (_hookKeyMsg == 0)
+	            {
+					_hookKeyMsg = Win32.RegisterWindowMessage(HookKeyMsgName).ToInt32();
+					if (_hookKeyMsg == 0)
+						throw new Win32Exception(Marshal.GetLastWin32Error());
+				}
+	            return _hookKeyMsg;
             }
         }
 
