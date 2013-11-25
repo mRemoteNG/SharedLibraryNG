@@ -85,11 +85,6 @@ namespace SharedLibraryNG
         private static readonly Win32.LowLevelKeyboardProcDelegate LowLevelKeyboardProcStaticDelegate = LowLevelKeyboardProc;
         private static readonly List<KeyNotificationEntry> NotificationEntries = new List<KeyNotificationEntry>();
         
-        // We can't get the state of the Windows keys with GetAsyncKeyState
-        // or GetKeyboardState so we'll have to keep track of them ourselves.
-        private static Boolean _leftWinKeyState;
-        private static Boolean _rightWinKeyState;
-
         public KeyboardHook()
         {
             _referenceCount++;
@@ -128,20 +123,6 @@ namespace SharedLibraryNG
         {
             var wParamInt = wParam.ToInt32();
             var result = 0;
-
-            switch (wParamInt)
-            {
-                case Win32.WM_KEYDOWN:
-                case Win32.WM_SYSKEYDOWN:
-                    if (lParam.vkCode == Win32.VK_LWIN) _leftWinKeyState = true;
-                    if (lParam.vkCode == Win32.VK_RWIN) _rightWinKeyState = true;
-                    break;
-                case Win32.WM_KEYUP:
-                case Win32.WM_SYSKEYUP:
-                    if (lParam.vkCode == Win32.VK_LWIN) _leftWinKeyState = false;
-                    if (lParam.vkCode == Win32.VK_RWIN) _rightWinKeyState = false;
-                    break;
-            }
 
             if (nCode == Win32.HC_ACTION)
             {
@@ -207,6 +188,8 @@ namespace SharedLibraryNG
             { Win32.VK_MENU, ModifierKeys.Alt },
             { Win32.VK_LMENU, ModifierKeys.LeftAlt },
             { Win32.VK_RMENU, ModifierKeys.RightAlt },
+            { Win32.VK_LWIN, ModifierKeys.LeftWin },
+            { Win32.VK_RWIN, ModifierKeys.RightWin },
         };
 
         public static ModifierKeys GetModifierKeyState()
@@ -218,9 +201,8 @@ namespace SharedLibraryNG
                 if ((Win32.GetAsyncKeyState(pair.Key) & Win32.KEYSTATE_PRESSED) != 0) modifierKeyState |= pair.Value;
             }
 
-            if (_leftWinKeyState || _rightWinKeyState) modifierKeyState |= ModifierKeys.Win;
-            if (_leftWinKeyState) modifierKeyState |= ModifierKeys.LeftWin;
-            if (_rightWinKeyState) modifierKeyState |= ModifierKeys.RightWin;
+	        if ((modifierKeyState & ModifierKeys.LeftWin) != 0) modifierKeyState |= ModifierKeys.Win;
+			if ((modifierKeyState & ModifierKeys.RightWin) != 0) modifierKeyState |= ModifierKeys.Win;
 
             return modifierKeyState;
         }
